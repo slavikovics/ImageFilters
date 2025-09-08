@@ -25,6 +25,7 @@
         <Slider Value="{Binding SliderValue}" Grid.Row="1"></Slider>
         <StackPanel Margin="0 5 0 10" HorizontalAlignment="Center" Spacing="10" Grid.Row="2" Orientation="Horizontal">
             <Button Command="{Binding LoadImageCommand}" Background="{Binding UploadButtonBrush}">Upload image</Button>
+            <Button Command="{Binding ApplyFilterCommand}">Apply filter</Button>
             <Button Background="{Binding FirstFilterButtonBrush}" Command="{Binding SelectFilterCommand}" CommandParameter="{Binding FirstFilterButtonBrush}">Filter 1</Button>
             <Button Background="{Binding SecondFilterButtonBrush}" Command="{Binding SelectFilterCommand}" CommandParameter="{Binding SecondFilterButtonBrush}">Filter 2</Button>
             <Button Background="{Binding ThirdFilterButtonBrush}" Command="{Binding SelectFilterCommand}" CommandParameter="{Binding ThirdFilterButtonBrush}">Filter 3</Button>

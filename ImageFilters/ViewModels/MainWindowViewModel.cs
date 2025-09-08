@@ -61,11 +61,34 @@ public partial class MainWindowViewModel : ViewModelBase
         }
         
         selectedFilter.Color = Color.FromArgb(255, 50, 50, 50);
-        await ApplyFilter();
     }
 
     [RelayCommand]
-    private async Task ApplyFilter()
+    private async Task ApplyFilter1()
+    {
+        ImageSource = SkiaFilters.Sepia(ImageSource);
+    }
+    
+    [RelayCommand]
+    private async Task ApplyFilter2()
+    {
+        ImageSource = SkiaFilters.Blur(ImageSource, SliderValue);
+    }
+    
+    [RelayCommand]
+    private async Task ApplyFilter3()
+    {
+        ImageSource = SkiaFilters.Brightness(ImageSource, SliderValue);
+    }
+    
+    [RelayCommand]
+    private async Task ApplyFilter4()
+    {
+        ImageSource = SkiaFilters.Sepia(ImageSource);
+    }
+    
+    [RelayCommand]
+    private async Task ApplyFilter5()
     {
         ImageSource = SkiaFilters.Sepia(ImageSource);
     }
