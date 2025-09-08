@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        xmlns:local="clr-namespace:ImageFilters"
         x:Class="ImageFilters.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
         Icon="/Assets/avalonia-logo.ico"
@@ -21,16 +22,18 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
-        <Image Grid.Row="0" Source="{Binding ImageSource}"/>
-        <Slider Value="{Binding SliderValue}" Grid.Row="1"></Slider>
+        <!-- <Image Grid.Row="0" Source="{Binding ImageSource}"/> -->
+        <local:SkiaBitmapView Grid.Row="0" CurrentBitmap="{Binding ImageSource}" Stretch="Uniform" ClipToBounds="True"
+                              HorizontalAlignment="Stretch"
+                              VerticalAlignment="Stretch"/>
+        <Slider Minimum="0" Maximum="1" Value="{Binding SliderValue}" Grid.Row="1"></Slider>
         <StackPanel Margin="0 5 0 10" HorizontalAlignment="Center" Spacing="10" Grid.Row="2" Orientation="Horizontal">
-            <Button Command="{Binding LoadImageCommand}" Background="{Binding UploadButtonBrush}">Upload image</Button>
-            <Button Command="{Binding ApplyFilterCommand}">Apply filter</Button>
-            <Button Background="{Binding FirstFilterButtonBrush}" Command="{Binding SelectFilterCommand}" CommandParameter="{Binding FirstFilterButtonBrush}">Filter 1</Button>
-            <Button Background="{Binding SecondFilterButtonBrush}" Command="{Binding SelectFilterCommand}" CommandParameter="{Binding SecondFilterButtonBrush}">Filter 2</Button>
-            <Button Background="{Binding ThirdFilterButtonBrush}" Command="{Binding SelectFilterCommand}" CommandParameter="{Binding ThirdFilterButtonBrush}">Filter 3</Button>
-            <Button Background="{Binding FourthFilterButtonBrush}" Command="{Binding SelectFilterCommand}" CommandParameter="{Binding FourthFilterButtonBrush}">Filter 4</Button>
-            <Button Background="{Binding FifthFilterButtonBrush}" Command="{Binding SelectFilterCommand}" CommandParameter="{Binding FifthFilterButtonBrush}">Filter 5</Button>
+            <Button Command="{Binding LoadImageCommand}">Upload image</Button>
+            <Button Command="{Binding ApplyFilter1Command}">Filter 1</Button>
+            <Button Command="{Binding ApplyFilter2Command}">Filter 2</Button>
+            <Button Command="{Binding ApplyFilter3Command}">Filter 3</Button>
+            <Button Command="{Binding ApplyFilter4Command}">Filter 4</Button>
+            <Button Command="{Binding ApplyFilter5Command}">Filter 5</Button>
             <Button Background="#b3003b">Reset</Button>
         </StackPanel>
     </Grid>

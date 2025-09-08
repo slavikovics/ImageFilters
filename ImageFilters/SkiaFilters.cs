@@ -3,129 +3,86 @@ using System.IO;
 using Avalonia;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Formats.Png;
-using SixLabors.ImageSharp.PixelFormats;
-using SixLabors.ImageSharp.Processing;
 using SkiaSharp;
 
 namespace ImageFilters;
 
 public static class SkiaFilters
 {
-    private static Bitmap ApplyColorFilter(Bitmap source, SKColorFilter filter)
+    public static SKBitmap Original { get; set; }
+
+    public static SKBitmap? Cached { get; private set; }
+
+    private static SKBitmap ApplyFilter(SKBitmap src, SKPaint paint)
     {
-        using var ms = new MemoryStream();
-        source.Save(ms);
-        ms.Position = 0;
+        var info = new SKImageInfo(src.Width, src.Height);
+        using var surface = SKSurface.Create(info);
 
-        using var skBitmap = SKBitmap.Decode(ms);
-
-        using var surface = SKSurface.Create(new SKImageInfo(skBitmap.Width, skBitmap.Height));
-        var canvas = surface.Canvas;
-
-        using var paint = new SKPaint { ColorFilter = filter };
-
-        canvas.Clear(SKColors.Transparent);
-        canvas.DrawBitmap(skBitmap, 0, 0, paint);
-        canvas.Flush();
+        surface.Canvas.Clear(SKColors.Transparent);
+        surface.Canvas.DrawBitmap(src, 0, 0, paint);
+        surface.Canvas.Flush();
 
         using var snapshot = surface.Snapshot();
-        using var data = snapshot.Encode(SKEncodedImageFormat.Png, 100);
-        using var outStream = new MemoryStream();
-        data.SaveTo(outStream);
-        outStream.Position = 0;
+        var dst = new SKBitmap(info);
 
-        return new Bitmap(outStream);
+        bool ok = snapshot.ReadPixels(dst.Info, dst.GetPixels(), dst.RowBytes);
+        if (!ok)
+            throw new InvalidOperationException("Failed to copy pixels");
+
+        return dst;
     }
-    
-    public static Bitmap Grayscale(Bitmap source)
-    {
-        var matrix = new float[]
-        {
-            0.2126f, 0.2126f, 0.2126f, 0, 0,
-            0.7152f, 0.7152f, 0.7152f, 0, 0,
-            0.0722f, 0.0722f, 0.0722f, 0, 0,
-            0,       0,       0,       1, 0
-        };
-        return ApplyColorFilter(source, SKColorFilter.CreateColorMatrix(matrix));
-    }
-    
-    public static Bitmap Sepia(Bitmap source)
-    {
-        var matrix = new float[]
-        {
-            0.393f, 0.769f, 0.189f, 0, 0,
-            0.349f, 0.686f, 0.168f, 0, 0,
-            0.272f, 0.534f, 0.131f, 0, 0,
-            0,      0,      0,      1, 0
-        };
-        return ApplyColorFilter(source, SKColorFilter.CreateColorMatrix(matrix));
-    }
-    
-    public static Bitmap Invert(Bitmap source)
-    {
-        var matrix = new float[]
-        {
-            -1,  0,  0, 0, 255,
-             0, -1,  0, 0, 255,
-             0,  0, -1, 0, 255,
-             0,  0,  0, 1,   0
-        };
-        return ApplyColorFilter(source, SKColorFilter.CreateColorMatrix(matrix));
-    }
-    
-    public static Bitmap Brightness(Bitmap source, float factor)
-    {
-        var matrix = new float[]
-        {
-            factor, 0,      0,      0, 0,
-            0,      factor, 0,      0, 0,
-            0,      0,      factor, 0, 0,
-            0,      0,      0,      1, 0
-        };
-        return ApplyColorFilter(source, SKColorFilter.CreateColorMatrix(matrix));
-    }
-    
-    public static Bitmap Contrast(Bitmap source, float factor)
+
+    public static SKBitmap Grayscale() => ApplyColorMatrix(Original, [
+        0.2126f, 0.2126f, 0.2126f, 0, 0,
+        0.7152f, 0.7152f, 0.7152f, 0, 0,
+        0.0722f, 0.0722f, 0.0722f, 0, 0,
+        0, 0, 0, 1, 0
+    ]);
+
+    public static SKBitmap Sepia() => ApplyColorMatrix(Original, [
+        0.393f, 0.769f, 0.189f, 0, 0,
+        0.349f, 0.686f, 0.168f, 0, 0,
+        0.272f, 0.534f, 0.131f, 0, 0,
+        0, 0, 0, 1, 0
+    ]);
+
+    public static SKBitmap Invert() => ApplyColorMatrix(Original, [
+        -1, 0, 0, 0, 255,
+        0, -1, 0, 0, 255,
+        0, 0, -1, 0, 255,
+        0, 0, 0, 1, 0
+    ]);
+
+    public static SKBitmap Brightness(float factor) => ApplyColorMatrix(Original, [
+        factor, 0, 0, 0, 0,
+        0, factor, 0, 0, 0,
+        0, 0, factor, 0, 0,
+        0, 0, 0, 1, 0
+    ]);
+
+    public static SKBitmap Contrast(float factor)
     {
         float t = 0.5f * (1 - factor) * 255f;
-        var matrix = new float[]
-        {
-            factor, 0,      0,      0, t,
-            0,      factor, 0,      0, t,
-            0,      0,      factor, 0, t,
-            0,      0,      0,      1, 0
-        };
-        return ApplyColorFilter(source, SKColorFilter.CreateColorMatrix(matrix));
+        return ApplyColorMatrix(Original, [
+            factor, 0, 0, 0, t,
+            0, factor, 0, 0, t,
+            0, 0, factor, 0, t,
+            0, 0, 0, 1, 0
+        ]);
     }
-    
-    public static Bitmap Blur(Bitmap source, float sigma)
+
+    public static SKBitmap Blur(float sigma)
     {
-        using var ms = new MemoryStream();
-        source.Save(ms);
-        ms.Position = 0;
-
-        using var skBitmap = SKBitmap.Decode(ms);
-
-        using var surface = SKSurface.Create(new SKImageInfo(skBitmap.Width, skBitmap.Height));
-        var canvas = surface.Canvas;
-
-        using var paint = new SKPaint
+        var paint = new SKPaint
         {
             ImageFilter = SKImageFilter.CreateBlur(sigma, sigma)
         };
+        return ApplyFilter(Original, paint);
+    }
 
-        canvas.Clear(SKColors.Transparent);
-        canvas.DrawBitmap(skBitmap, 0, 0, paint);
-        canvas.Flush();
-
-        using var snapshot = surface.Snapshot();
-        using var data = snapshot.Encode(SKEncodedImageFormat.Png, 100);
-        using var outStream = new MemoryStream();
-        data.SaveTo(outStream);
-        outStream.Position = 0;
-
-        return new Bitmap(outStream);
+    private static SKBitmap ApplyColorMatrix(SKBitmap src, float[] matrix)
+    {
+        var paint = new SKPaint { ColorFilter = SKColorFilter.CreateColorMatrix(matrix) };
+        return ApplyFilter(src, paint);
     }
 }
