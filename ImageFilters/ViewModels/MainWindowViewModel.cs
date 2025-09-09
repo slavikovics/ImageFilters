@@ -16,7 +16,10 @@ public partial class MainWindowViewModel : ViewModelBase
 {
     private readonly IFilePickerService _filePickerService;
 
-    [ObservableProperty] private SKBitmap _imageSource;
+    [ObservableProperty] 
+    private SKBitmap _imageSource;
+
+    private SKBitmap _backup;
     
     [ObservableProperty] 
     private double _sliderValue = 0;
@@ -40,54 +43,76 @@ public partial class MainWindowViewModel : ViewModelBase
     [RelayCommand]
     private async Task ApplyFilter1()
     {
+        SkiaFilters.SaveChanges();
         _selectedLiveFilter = null;
-        ImageSource = SkiaFilters.Sepia();
+        _selectedLiveFilter += UpdateFilter1;
+        await UpdateFilter1();
     }
 
     [RelayCommand]
     private async Task ApplyFilter2()
     {
+        SkiaFilters.SaveChanges();
         _selectedLiveFilter = null;
-        _selectedLiveFilter += ApplyFilter2;
-        ImageSource = SkiaFilters.Blur((float)SliderValue * 10);
+        _selectedLiveFilter += UpdateFilter2;
+        await UpdateFilter2();
     }
 
     [RelayCommand]
     private async Task ApplyFilter3()
     {
+        SkiaFilters.SaveChanges();
         _selectedLiveFilter = null;
-        _selectedLiveFilter += ApplyFilter3;
-        ImageSource = SkiaFilters.Brightness((float)SliderValue * 2);
+        _selectedLiveFilter += UpdateFilter3;
+        await UpdateFilter3();
     }
 
     [RelayCommand]
     private async Task ApplyFilter4()
     {
+        SkiaFilters.SaveChanges();
         _selectedLiveFilter = null;
-        _selectedLiveFilter += ApplyFilter4;
-        ImageSource = SkiaFilters.Contrast((float)SliderValue * 3);
+        _selectedLiveFilter += UpdateFilter4;
+        await UpdateFilter4();
     }
 
     [RelayCommand]
     private async Task ApplyFilter5()
     {
+        SkiaFilters.SaveChanges();
         _selectedLiveFilter = null;
-        ImageSource = SkiaFilters.Grayscale();
+        _selectedLiveFilter += UpdateFilter5;
+        await UpdateFilter5();
     }
-
-    public static WriteableBitmap ConvertBitmapToWriteableBitmap(Bitmap bitmap)
+    
+    private async Task UpdateFilter1()
     {
-        return new WriteableBitmap(
-            bitmap.PixelSize,
-            bitmap.Dpi,
-            bitmap.Format,
-            bitmap.AlphaFormat
-        );
+        ImageSource = SkiaFilters.Sepia((float) SliderValue);
+    }
+    
+    private async Task UpdateFilter2()
+    {
+        ImageSource = SkiaFilters.Blur((float)SliderValue * 10);
+    }
+    
+    private async Task UpdateFilter3()
+    {
+        ImageSource = SkiaFilters.Brightness((float)SliderValue * 2);
+    }
+    
+    private async Task UpdateFilter4()
+    {
+        ImageSource = SkiaFilters.Contrast((float) SliderValue);
+    }
+    
+    private async Task UpdateFilter5()
+    {
+        ImageSource = SkiaFilters.Invert((float) SliderValue);
     }
     
     private async Task ApplyLiveFilterChange()
     {
-        if (Math.Abs(SliderValue - _lastSliderValue) < 0.05) return;
+        if (Math.Abs(SliderValue - _lastSliderValue) < 0.01) return;
         
         _lastSliderValue = SliderValue;
         await _selectedLiveFilter?.Invoke()!;
@@ -103,17 +128,22 @@ public partial class MainWindowViewModel : ViewModelBase
             {
                 await using Stream stream = await source.OpenReadAsync();
                 ImageSource = SKBitmap.Decode(stream);
+                _backup = ImageSource.Copy();
                 SkiaFilters.Original = ImageSource;
+                SkiaFilters.LastEdit = ImageSource;
             }
         }
         catch (Exception ex)
         {
-            // ignored
         }
     }
 
     [RelayCommand]
     private void ResetFilter()
     {
+        ImageSource = _backup.Copy();
+        SkiaFilters.Original = _backup.Copy();
+        SkiaFilters.LastEdit = _backup.Copy();
+        _selectedLiveFilter = null;
     }
 }

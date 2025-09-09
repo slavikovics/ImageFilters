@@ -34,7 +34,7 @@
             <Button Command="{Binding ApplyFilter3Command}">Brightness</Button>
             <Button Command="{Binding ApplyFilter4Command}">Contrast</Button>
             <Button Command="{Binding ApplyFilter5Command}">Grayscale</Button>
-            <Button Background="#b3003b">Reset</Button>
+            <Button Background="#b3003b" Command="{Binding ResetFilterCommand}">Reset</Button>
         </StackPanel>
     </Grid>
 </Window>
