@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
@@ -17,7 +18,19 @@ public partial class MainWindowViewModel : ViewModelBase
 
     [ObservableProperty] private SKBitmap _imageSource;
     
-    [ObservableProperty] private double _sliderValue = 0;
+    [ObservableProperty] 
+    private double _sliderValue = 0;
+    
+    private double _lastSliderValue = 0;
+
+    private delegate Task SelectedFilter();
+    
+    private SelectedFilter? _selectedLiveFilter;
+
+    partial void OnSliderValueChanged(double value)
+    {
+        Task.Run(ApplyLiveFilterChange);
+    }
 
     public MainWindowViewModel(IFilePickerService filePickerService)
     {
@@ -27,30 +40,38 @@ public partial class MainWindowViewModel : ViewModelBase
     [RelayCommand]
     private async Task ApplyFilter1()
     {
+        _selectedLiveFilter = null;
         ImageSource = SkiaFilters.Sepia();
     }
 
     [RelayCommand]
     private async Task ApplyFilter2()
     {
-        ImageSource = SkiaFilters.Blur((float) SliderValue * 10);
+        _selectedLiveFilter = null;
+        _selectedLiveFilter += ApplyFilter2;
+        ImageSource = SkiaFilters.Blur((float)SliderValue * 10);
     }
 
     [RelayCommand]
     private async Task ApplyFilter3()
     {
-        ImageSource = SkiaFilters.Brightness((float) SliderValue * 2);
+        _selectedLiveFilter = null;
+        _selectedLiveFilter += ApplyFilter3;
+        ImageSource = SkiaFilters.Brightness((float)SliderValue * 2);
     }
 
     [RelayCommand]
     private async Task ApplyFilter4()
     {
-        ImageSource = SkiaFilters.Contrast((float) SliderValue * 3);
+        _selectedLiveFilter = null;
+        _selectedLiveFilter += ApplyFilter4;
+        ImageSource = SkiaFilters.Contrast((float)SliderValue * 3);
     }
 
     [RelayCommand]
     private async Task ApplyFilter5()
     {
+        _selectedLiveFilter = null;
         ImageSource = SkiaFilters.Grayscale();
     }
 
@@ -62,6 +83,14 @@ public partial class MainWindowViewModel : ViewModelBase
             bitmap.Format,
             bitmap.AlphaFormat
         );
+    }
+    
+    private async Task ApplyLiveFilterChange()
+    {
+        if (Math.Abs(SliderValue - _lastSliderValue) < 0.05) return;
+        
+        _lastSliderValue = SliderValue;
+        await _selectedLiveFilter?.Invoke()!;
     }
 
     [RelayCommand]

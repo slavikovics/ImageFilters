@@ -11,8 +11,6 @@ public static class SkiaFilters
 {
     public static SKBitmap Original { get; set; }
 
-    public static SKBitmap? Cached { get; private set; }
-
     private static SKBitmap ApplyFilter(SKBitmap src, SKPaint paint)
     {
         var info = new SKImageInfo(src.Width, src.Height);

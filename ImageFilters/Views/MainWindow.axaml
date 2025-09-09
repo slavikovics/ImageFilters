@@ -29,11 +29,11 @@
         <Slider Minimum="0" Maximum="1" Value="{Binding SliderValue}" Grid.Row="1"></Slider>
         <StackPanel Margin="0 5 0 10" HorizontalAlignment="Center" Spacing="10" Grid.Row="2" Orientation="Horizontal">
             <Button Command="{Binding LoadImageCommand}">Upload image</Button>
-            <Button Command="{Binding ApplyFilter1Command}">Filter 1</Button>
-            <Button Command="{Binding ApplyFilter2Command}">Filter 2</Button>
-            <Button Command="{Binding ApplyFilter3Command}">Filter 3</Button>
-            <Button Command="{Binding ApplyFilter4Command}">Filter 4</Button>
-            <Button Command="{Binding ApplyFilter5Command}">Filter 5</Button>
+            <Button Command="{Binding ApplyFilter1Command}">Sephia</Button>
+            <Button Command="{Binding ApplyFilter2Command}">Blur</Button>
+            <Button Command="{Binding ApplyFilter3Command}">Brightness</Button>
+            <Button Command="{Binding ApplyFilter4Command}">Contrast</Button>
+            <Button Command="{Binding ApplyFilter5Command}">Grayscale</Button>
             <Button Background="#b3003b">Reset</Button>
         </StackPanel>
     </Grid>
