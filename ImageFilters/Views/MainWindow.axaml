@@ -22,19 +22,46 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
-        <!-- <Image Grid.Row="0" Source="{Binding ImageSource}"/> -->
-        <local:SkiaBitmapView Grid.Row="0" CurrentBitmap="{Binding ImageSource}" Stretch="Uniform" ClipToBounds="True"
+		
+        <local:SkiaBitmapView Grid.Row="0" 
+							  CurrentBitmap="{Binding ImageSource}" 
+							  Stretch="Uniform" 
+							  ClipToBounds="True"
                               HorizontalAlignment="Stretch"
                               VerticalAlignment="Stretch"/>
+		
         <Slider Minimum="0" Maximum="1" Value="{Binding SliderValue}" Grid.Row="1"></Slider>
-        <StackPanel Margin="0 5 0 10" HorizontalAlignment="Center" Spacing="10" Grid.Row="2" Orientation="Horizontal">
+		
+        <StackPanel Margin="0 5 0 10" 
+					HorizontalAlignment="Center" 
+					Spacing="10"
+					Grid.Row="2"
+					Orientation="Horizontal">
             <Button Command="{Binding LoadImageCommand}">Upload image</Button>
-            <Button Command="{Binding ApplyFilter1Command}">Sephia</Button>
-            <Button Command="{Binding ApplyFilter2Command}">Blur</Button>
-            <Button Command="{Binding ApplyFilter3Command}">Brightness</Button>
-            <Button Command="{Binding ApplyFilter4Command}">Contrast</Button>
-            <Button Command="{Binding ApplyFilter5Command}">Grayscale</Button>
-            <Button Background="#b3003b" Command="{Binding ResetFilterCommand}">Reset</Button>
+			
+            <Button Command="{Binding ApplyFilter1Command}" 
+					IsEnabled="{Binding IsImageLoaded}"
+					Background="{Binding Filter1Brush}">Sephia</Button>
+			
+            <Button Command="{Binding ApplyFilter2Command}"
+					IsEnabled="{Binding IsImageLoaded}"
+					Background="{Binding Filter2Brush}">Blur</Button>
+			
+            <Button Command="{Binding ApplyFilter3Command}"
+					IsEnabled="{Binding IsImageLoaded}"
+					Background="{Binding Filter3Brush}">Brightness</Button>
+			
+            <Button Command="{Binding ApplyFilter4Command}"
+					IsEnabled="{Binding IsImageLoaded}"
+					Background="{Binding Filter4Brush}">Contrast</Button>
+			
+            <Button Command="{Binding ApplyFilter5Command}"
+					IsEnabled="{Binding IsImageLoaded}"
+					Background="{Binding Filter5Brush}">Invert</Button>
+			
+            <Button Background="#b3003b"
+					IsEnabled="{Binding IsImageLoaded}"
+					Command="{Binding ResetFilterCommand}">Reset</Button>
         </StackPanel>
     </Grid>
 </Window>

@@ -1,11 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
-using Avalonia;
-using Avalonia.Controls;
 using Avalonia.Media;
-using Avalonia.Media.Imaging;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using SkiaSharp;
@@ -30,6 +26,28 @@ public partial class MainWindowViewModel : ViewModelBase
     
     private SelectedFilter? _selectedLiveFilter;
 
+    private Color _selectedColor;
+
+    private Color _defaultColor;
+
+    [ObservableProperty]
+    private SolidColorBrush _filter1Brush;
+
+    [ObservableProperty]
+    private SolidColorBrush _filter2Brush;
+
+    [ObservableProperty]
+    private SolidColorBrush _filter3Brush;
+
+    [ObservableProperty]
+    private SolidColorBrush _filter4Brush;
+
+    [ObservableProperty]
+    private SolidColorBrush _filter5Brush;
+
+    [ObservableProperty]
+    private bool _isImageLoaded;
+
     partial void OnSliderValueChanged(double value)
     {
         Task.Run(ApplyLiveFilterChange);
@@ -38,6 +56,25 @@ public partial class MainWindowViewModel : ViewModelBase
     public MainWindowViewModel(IFilePickerService filePickerService)
     {
         _filePickerService = filePickerService;
+        IsImageLoaded = false;
+        SetUpColors();
+    }
+
+    private void SetUpColors()
+    {
+        _selectedColor = Color.FromRgb(30, 30, 30);
+        _defaultColor = Color.FromRgb(51, 51, 51);
+
+        DisableAllSelections();
+    }
+
+    private void DisableAllSelections()
+    {
+        Filter1Brush = new SolidColorBrush(_defaultColor);
+        Filter2Brush = new SolidColorBrush(_defaultColor);
+        Filter3Brush = new SolidColorBrush(_defaultColor);
+        Filter4Brush = new SolidColorBrush(_defaultColor);
+        Filter5Brush = new SolidColorBrush(_defaultColor);
     }
 
     [RelayCommand]
@@ -46,6 +83,8 @@ public partial class MainWindowViewModel : ViewModelBase
         SkiaFilters.SaveChanges();
         _selectedLiveFilter = null;
         _selectedLiveFilter += UpdateFilter1;
+        DisableAllSelections();
+        Filter1Brush.Color = _selectedColor;
         await UpdateFilter1();
     }
 
@@ -55,6 +94,8 @@ public partial class MainWindowViewModel : ViewModelBase
         SkiaFilters.SaveChanges();
         _selectedLiveFilter = null;
         _selectedLiveFilter += UpdateFilter2;
+        DisableAllSelections();
+        Filter2Brush.Color = _selectedColor;
         await UpdateFilter2();
     }
 
@@ -64,6 +105,8 @@ public partial class MainWindowViewModel : ViewModelBase
         SkiaFilters.SaveChanges();
         _selectedLiveFilter = null;
         _selectedLiveFilter += UpdateFilter3;
+        DisableAllSelections();
+        Filter3Brush.Color = _selectedColor;
         await UpdateFilter3();
     }
 
@@ -73,6 +116,8 @@ public partial class MainWindowViewModel : ViewModelBase
         SkiaFilters.SaveChanges();
         _selectedLiveFilter = null;
         _selectedLiveFilter += UpdateFilter4;
+        DisableAllSelections();
+        Filter4Brush.Color = _selectedColor;
         await UpdateFilter4();
     }
 
@@ -82,6 +127,8 @@ public partial class MainWindowViewModel : ViewModelBase
         SkiaFilters.SaveChanges();
         _selectedLiveFilter = null;
         _selectedLiveFilter += UpdateFilter5;
+        DisableAllSelections();
+        Filter5Brush.Color = _selectedColor;
         await UpdateFilter5();
     }
     
@@ -115,7 +162,9 @@ public partial class MainWindowViewModel : ViewModelBase
         if (Math.Abs(SliderValue - _lastSliderValue) < 0.01) return;
         
         _lastSliderValue = SliderValue;
-        await _selectedLiveFilter?.Invoke()!;
+        if (_selectedLiveFilter is null) return;
+
+        await _selectedLiveFilter.Invoke();
     }
 
     [RelayCommand]
@@ -131,6 +180,7 @@ public partial class MainWindowViewModel : ViewModelBase
                 _backup = ImageSource.Copy();
                 SkiaFilters.Original = ImageSource;
                 SkiaFilters.LastEdit = ImageSource;
+                IsImageLoaded = true;
             }
         }
         catch (Exception ex)
@@ -144,6 +194,7 @@ public partial class MainWindowViewModel : ViewModelBase
         ImageSource = _backup.Copy();
         SkiaFilters.Original = _backup.Copy();
         SkiaFilters.LastEdit = _backup.Copy();
+        DisableAllSelections();
         _selectedLiveFilter = null;
     }
 }
