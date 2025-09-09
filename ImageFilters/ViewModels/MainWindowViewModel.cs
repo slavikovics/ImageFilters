@@ -26,6 +26,8 @@ public partial class MainWindowViewModel : ViewModelBase
     
     private SelectedFilter? _selectedLiveFilter;
 
+    private SkiaFilters? _currentFilter = null;
+
     private Color _selectedColor;
 
     private Color _defaultColor;
@@ -80,7 +82,7 @@ public partial class MainWindowViewModel : ViewModelBase
     [RelayCommand]
     private async Task ApplyFilter1()
     {
-        SkiaFilters.SaveChanges();
+        _currentFilter?.SaveChanges();
         _selectedLiveFilter = null;
         _selectedLiveFilter += UpdateFilter1;
         DisableAllSelections();
@@ -91,7 +93,7 @@ public partial class MainWindowViewModel : ViewModelBase
     [RelayCommand]
     private async Task ApplyFilter2()
     {
-        SkiaFilters.SaveChanges();
+        _currentFilter?.SaveChanges();
         _selectedLiveFilter = null;
         _selectedLiveFilter += UpdateFilter2;
         DisableAllSelections();
@@ -102,7 +104,7 @@ public partial class MainWindowViewModel : ViewModelBase
     [RelayCommand]
     private async Task ApplyFilter3()
     {
-        SkiaFilters.SaveChanges();
+        _currentFilter?.SaveChanges();
         _selectedLiveFilter = null;
         _selectedLiveFilter += UpdateFilter3;
         DisableAllSelections();
@@ -113,7 +115,7 @@ public partial class MainWindowViewModel : ViewModelBase
     [RelayCommand]
     private async Task ApplyFilter4()
     {
-        SkiaFilters.SaveChanges();
+        _currentFilter?.SaveChanges();
         _selectedLiveFilter = null;
         _selectedLiveFilter += UpdateFilter4;
         DisableAllSelections();
@@ -124,7 +126,7 @@ public partial class MainWindowViewModel : ViewModelBase
     [RelayCommand]
     private async Task ApplyFilter5()
     {
-        SkiaFilters.SaveChanges();
+        _currentFilter?.SaveChanges();
         _selectedLiveFilter = null;
         _selectedLiveFilter += UpdateFilter5;
         DisableAllSelections();
@@ -134,27 +136,32 @@ public partial class MainWindowViewModel : ViewModelBase
     
     private async Task UpdateFilter1()
     {
-        ImageSource = SkiaFilters.Sepia((float) SliderValue);
+        if (_currentFilter is null) return;
+        ImageSource = _currentFilter.Sepia((float) SliderValue);
     }
     
     private async Task UpdateFilter2()
     {
-        ImageSource = SkiaFilters.Blur((float)SliderValue * 10);
+        if (_currentFilter is null) return;
+        ImageSource = _currentFilter.Blur((float)SliderValue * 10);
     }
     
     private async Task UpdateFilter3()
     {
-        ImageSource = SkiaFilters.Brightness((float)SliderValue * 2);
+        if (_currentFilter is null) return;
+        ImageSource = _currentFilter.Brightness((float)SliderValue * 2);
     }
     
     private async Task UpdateFilter4()
     {
-        ImageSource = SkiaFilters.Contrast((float) SliderValue);
+        if (_currentFilter is null) return;
+        ImageSource = _currentFilter.Contrast((float) SliderValue);
     }
     
     private async Task UpdateFilter5()
     {
-        ImageSource = SkiaFilters.Invert((float) SliderValue);
+        if (_currentFilter is null) return;
+        ImageSource = _currentFilter.Invert((float) SliderValue);
     }
     
     private async Task ApplyLiveFilterChange()
@@ -178,8 +185,7 @@ public partial class MainWindowViewModel : ViewModelBase
                 await using Stream stream = await source.OpenReadAsync();
                 ImageSource = SKBitmap.Decode(stream);
                 _backup = ImageSource.Copy();
-                SkiaFilters.Original = ImageSource;
-                SkiaFilters.LastEdit = ImageSource;
+                _currentFilter = new SkiaFilters(ImageSource);
                 IsImageLoaded = true;
             }
         }
@@ -192,8 +198,9 @@ public partial class MainWindowViewModel : ViewModelBase
     private void ResetFilter()
     {
         ImageSource = _backup.Copy();
-        SkiaFilters.Original = _backup.Copy();
-        SkiaFilters.LastEdit = _backup.Copy();
+        if (_currentFilter is null) return;
+        _currentFilter.Original = _backup.Copy();
+        _currentFilter.LastEdit = _backup.Copy();
         DisableAllSelections();
         _selectedLiveFilter = null;
     }

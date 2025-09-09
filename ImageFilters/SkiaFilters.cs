@@ -1,20 +1,21 @@
 ﻿using System;
-using System.IO;
-using Avalonia;
-using Avalonia.Media.Imaging;
-using Avalonia.Platform;
 using SkiaSharp;
-using InvalidOperationException = System.InvalidOperationException;
 
 namespace ImageFilters;
 
-public static class SkiaFilters
+public class SkiaFilters
 {
-    public static SKBitmap Original { get; set; }
+    public SkiaFilters(SKBitmap original) 
+    { 
+        Original = original.Copy();
+        LastEdit = original.Copy();
+    }
 
-    public static SKBitmap? LastEdit { get; set; } = null;
+    public SKBitmap Original { get; set; }
 
-    private static SKBitmap ApplyFilter(SKPaint paint)
+    public SKBitmap? LastEdit { get; set; } = null;
+
+    private SKBitmap ApplyFilter(SKPaint paint)
     {
         var info = new SKImageInfo(Original.Width, Original.Height, SKColorType.Bgra8888, SKAlphaType.Premul);
         using var surface = SKSurface.Create(info);
@@ -34,7 +35,7 @@ public static class SkiaFilters
         return dst;
     }
 
-    public static void SaveChanges()
+    public void SaveChanges()
     {
         if (LastEdit is not null)
         {
@@ -42,14 +43,14 @@ public static class SkiaFilters
         }
     }
 
-    public static SKBitmap Grayscale() => ApplyColorMatrix(Original, [
+    public SKBitmap Grayscale() => ApplyColorMatrix(Original, [
         0.2126f, 0.2126f, 0.2126f, 0, 0,
         0.7152f, 0.7152f, 0.7152f, 0, 0,
         0.0722f, 0.0722f, 0.0722f, 0, 0,
         0, 0, 0, 1, 0
     ]);
 
-    public static SKBitmap Sepia(float intensity)
+    public SKBitmap Sepia(float intensity)
     {
         intensity = Math.Clamp(intensity, 0f, 1f);
         
@@ -76,14 +77,12 @@ public static class SkiaFilters
         return ApplyColorMatrix(Original, matrix);
     }
 
-    public static SKBitmap Invert(float intensity)
+    public SKBitmap Invert(float intensity)
     {
         if (Original == null) throw new ArgumentNullException(nameof(Original));
 
         intensity = Math.Clamp(intensity, 0f, 1f);
 
-        // Create a color matrix that inverts colors with the specified intensity
-        // The matrix is in the format expected by SkiaSharp (normalized values [0, 1])
         float[] matrix =
         [
             1 - 2 * intensity, 0, 0, 0, intensity,
@@ -95,14 +94,14 @@ public static class SkiaFilters
         return ApplyColorMatrix(Original, matrix);
     }
 
-    public static SKBitmap Brightness(float factor) => ApplyColorMatrix(Original, [
+    public SKBitmap Brightness(float factor) => ApplyColorMatrix(Original, [
         factor, 0, 0, 0, 0,
         0, factor, 0, 0, 0,
         0, 0, factor, 0, 0,
         0, 0, 0, 1, 0
     ]);
 
-    public static SKBitmap Contrast(float factor)
+    public SKBitmap Contrast(float factor)
     {
         factor = Math.Clamp(factor, 0f, 2f);
         float t = (128f * (1f - factor)) / 255f;
@@ -118,7 +117,7 @@ public static class SkiaFilters
         );
     }
 
-    public static SKBitmap Blur(float sigma)
+    public SKBitmap Blur(float sigma)
     {
         var paint = new SKPaint
         {
@@ -127,7 +126,7 @@ public static class SkiaFilters
         return ApplyFilter(paint);
     }
 
-    private static SKBitmap ApplyColorMatrix(SKBitmap src, float[] matrix)
+    private SKBitmap ApplyColorMatrix(SKBitmap src, float[] matrix)
     {
         var paint = new SKPaint { ColorFilter = SKColorFilter.CreateColorMatrix(matrix) };
         return ApplyFilter(paint);
