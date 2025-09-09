@@ -166,7 +166,7 @@ public partial class MainWindowViewModel : ViewModelBase
     
     private async Task ApplyLiveFilterChange()
     {
-        if (Math.Abs(SliderValue - _lastSliderValue) < 0.01) return;
+        if (Math.Abs(SliderValue - _lastSliderValue) < 1) return;
         
         _lastSliderValue = SliderValue;
         if (_selectedLiveFilter is null) return;

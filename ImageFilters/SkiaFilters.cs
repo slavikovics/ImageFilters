@@ -50,9 +50,17 @@ public class SkiaFilters
         0, 0, 0, 1, 0
     ]);
 
+    public float SmartClamp(float value, float newMin, float newMax, float originalMin = 0f, float originalMax = 100f)
+    {
+        float originalDelta = originalMax - originalMin;
+        float newDelta = newMax - newMin;
+        float factor = newDelta / originalDelta;
+        return value * factor;
+    }
+
     public SKBitmap Sepia(float intensity)
     {
-        intensity = Math.Clamp(intensity, 0f, 1f);
+        intensity = SmartClamp(intensity, 0f, 3f);
         
         float[] sepia =
         [
@@ -81,7 +89,7 @@ public class SkiaFilters
     {
         if (Original == null) throw new ArgumentNullException(nameof(Original));
 
-        intensity = Math.Clamp(intensity, 0f, 1f);
+        intensity = SmartClamp(intensity, 0f, 1f);
 
         float[] matrix =
         [
@@ -94,16 +102,20 @@ public class SkiaFilters
         return ApplyColorMatrix(Original, matrix);
     }
 
-    public SKBitmap Brightness(float factor) => ApplyColorMatrix(Original, [
-        factor, 0, 0, 0, 0,
-        0, factor, 0, 0, 0,
-        0, 0, factor, 0, 0,
-        0, 0, 0, 1, 0
-    ]);
+    public SKBitmap Brightness(float factor)
+    {
+        factor = SmartClamp(factor, 0f, 3f);
+        return ApplyColorMatrix(Original, [
+            factor, 0, 0, 0, 0,
+            0, factor, 0, 0, 0,
+            0, 0, factor, 0, 0,
+            0, 0, 0, 1, 0
+        ]);
+    }
 
     public SKBitmap Contrast(float factor)
     {
-        factor = Math.Clamp(factor, 0f, 2f);
+        factor = SmartClamp(factor, 0f, 6f);
         float t = (128f * (1f - factor)) / 255f;
 
         return ApplyColorMatrix(
@@ -119,6 +131,8 @@ public class SkiaFilters
 
     public SKBitmap Blur(float sigma)
     {
+        sigma = SmartClamp(sigma, 0f, 15f);
+        
         var paint = new SKPaint
         {
             ImageFilter = SKImageFilter.CreateBlur(sigma, sigma)
