@@ -62,6 +62,9 @@
             <Button Background="#b3003b"
 					IsEnabled="{Binding IsImageLoaded}"
 					Command="{Binding ResetFilterCommand}">Reset</Button>
+	        
+	        <Button IsEnabled="{Binding IsImageLoaded}"
+	                Command="{Binding AdjustBrightnessUsingTargetCommand}">Load other image as reference</Button>
         </StackPanel>
     </Grid>
 </Window>

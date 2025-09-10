@@ -133,6 +133,28 @@ public partial class MainWindowViewModel : ViewModelBase
         Filter5Brush.Color = _selectedColor;
         await UpdateFilter5();
     }
+
+    [RelayCommand]
+    private async Task AdjustBrightnessUsingTarget()
+    {
+        _currentFilter?.SaveChanges();
+        _selectedLiveFilter = null;
+        DisableAllSelections();
+        
+        try
+        {
+            var source = await _filePickerService.PickImageAsync();
+            if (source != null)
+            {
+                await using Stream stream = await source.OpenReadAsync();
+                var reference = SKBitmap.Decode(stream);
+                ImageSource = ImageAdjuster.AdjustBrightnessContrast(ImageSource, reference);
+            }
+        }
+        catch (Exception ex)
+        {
+        }
+    }
     
     private async Task UpdateFilter1()
     {
