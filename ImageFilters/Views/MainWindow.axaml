@@ -65,6 +65,9 @@
 	        
 	        <Button IsEnabled="{Binding IsImageLoaded}"
 	                Command="{Binding AdjustBrightnessUsingTargetCommand}">Load other image as reference</Button>
+	        
+	        <Button IsEnabled="{Binding IsImageLoaded}"
+	                Command="{Binding SaveImageCommand}">Save image</Button>
         </StackPanel>
     </Grid>
 </Window>

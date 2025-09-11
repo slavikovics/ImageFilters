@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform.Storage;
+using SkiaSharp;
 
 namespace ImageFilters;
 
@@ -60,6 +61,29 @@ public class FilePickerService : IFilePickerService
         return null;
     }
     
+    public async Task<IStorageFile?> SaveImageAsync()
+    {
+        var topLevel = TopLevel.GetTopLevel(_mainWindow);
+        if (topLevel == null) return null;
+        
+        var fileType = new FilePickerFileType("Image")
+        {
+            Patterns = new[] { "*.png", "*.jpg", "*.jpeg", "*.bmp", "*.gif" },
+            AppleUniformTypeIdentifiers = new[] { "image.png" },
+            MimeTypes = new[] { "png/*", "jpg/*", "jpeg/*", "bmp/*", "gif/*" }
+        };
+
+        var options = new FilePickerSaveOptions
+        {
+            Title = "Save Image",
+            FileTypeChoices = new[] { fileType },
+            DefaultExtension = "png",
+            ShowOverwritePrompt = true
+        };
+        
+        return await topLevel.StorageProvider.SaveFilePickerAsync(options);
+    }
+
     public async Task<Bitmap> LoadImageFromStorageFileAsync(IStorageFile storageFile)
     {
         if (storageFile == null) throw new ArgumentNullException(nameof(storageFile));

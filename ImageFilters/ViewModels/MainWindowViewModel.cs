@@ -226,4 +226,22 @@ public partial class MainWindowViewModel : ViewModelBase
         DisableAllSelections();
         _selectedLiveFilter = null;
     }
+
+    [RelayCommand]
+    private async Task SaveImage()
+    {
+        try
+        {
+            var path = await _filePickerService.SaveImageAsync();
+            if (path != null)
+            {
+                var extension = Path.GetExtension(path.Name).ToLower();
+                using var stream = await path.OpenWriteAsync();
+                _imageSource.Encode(stream, SKEncodedImageFormat.Png, 300);
+            }
+        }
+        catch (Exception e)
+        {
+        }
+    }
 }
