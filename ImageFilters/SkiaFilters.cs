@@ -50,7 +50,7 @@ public class SkiaFilters
         0, 0, 0, 1, 0
     ]);
 
-    public float SmartClamp(float value, float newMin, float newMax, float originalMin = 0f, float originalMax = 100f)
+    public static float SmartClamp(float value, float newMin, float newMax, float originalMin = 0f, float originalMax = 100f)
     {
         float originalDelta = originalMax - originalMin;
         float newDelta = newMax - newMin;

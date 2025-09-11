@@ -7,18 +7,14 @@ public static class ImageAdjuster
 {
     public static SKBitmap AdjustBrightnessContrast(SKBitmap target, SKBitmap reference)
     {
-        // Приведение изображений к единому формату (Rgba8888)
         target = ConvertToRgba8888(target);
         reference = ConvertToRgba8888(reference);
-
-        // Вычисление статистики для reference и target изображений
+        
         var refStats = ComputeImageStats(reference);
         var targetStats = ComputeImageStats(target);
 
-        // Создание копии target изображения для модификации
         SKBitmap adjusted = target.Copy();
 
-        // Применение корректировок к каждому пикселю
         using (var pixmap = adjusted.PeekPixels())
         {
             var pixels = pixmap.GetPixelSpan<SKColor>();
@@ -29,7 +25,6 @@ public static class ImageAdjuster
                 double g = AdjustComponent(color.Green, targetStats.Green, refStats.Green);
                 double b = AdjustComponent(color.Blue, targetStats.Blue, refStats.Blue);
 
-                // Клиппинг значений в диапазон [0, 255]
                 byte newR = (byte)Math.Clamp(r, 0, 255);
                 byte newG = (byte)Math.Clamp(g, 0, 255);
                 byte newB = (byte)Math.Clamp(b, 0, 255);
@@ -48,7 +43,6 @@ public static class ImageAdjuster
         return bitmap.Copy(SKColorType.Rgba8888);
     }
 
-    // Структура для хранения статистики по каналам
     private struct ImageStats
     {
         public (double Mean, double Std) Red;
@@ -62,7 +56,6 @@ public static class ImageAdjuster
         long sumSqR = 0, sumSqG = 0, sumSqB = 0;
         int totalPixels = bitmap.Width * bitmap.Height;
 
-        // Первый проход: вычисление сумм
         using (var pixmap = bitmap.PeekPixels())
         {
             var pixels = pixmap.GetPixelSpan<SKColor>();
@@ -77,7 +70,6 @@ public static class ImageAdjuster
             }
         }
 
-        // Вычисление среднего и стандартного отклонения
         return new ImageStats
         {
             Red = CalculateStats(sumR, sumSqR, totalPixels),
@@ -96,7 +88,7 @@ public static class ImageAdjuster
 
     private static double AdjustComponent(byte value, (double Mean, double Std) target, (double Mean, double Std) reference)
     {
-        if (target.Std == 0) // Избегание деления на ноль
+        if (target.Std == 0)
             return reference.Mean;
         
         return (value - target.Mean) * (reference.Std / target.Std) + reference.Mean;
