@@ -26,7 +26,7 @@ public partial class MainWindowViewModel : ViewModelBase
     
     private SelectedFilter? _selectedLiveFilter;
 
-    private SkiaFilters? _currentFilter = null;
+    private SkiaFilters? _currentFilter;
 
     private Color _selectedColor;
 
