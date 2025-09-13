@@ -7,9 +7,6 @@ public static class ImageAdjuster
 {
     public static SKBitmap AdjustBrightnessContrast(SKBitmap target, SKBitmap reference)
     {
-        //target = ConvertToRgba8888(target);
-        //reference = ConvertToRgba8888(reference);
-        
         var refStats = ComputeImageStats(reference);
         var targetStats = ComputeImageStats(target);
 
