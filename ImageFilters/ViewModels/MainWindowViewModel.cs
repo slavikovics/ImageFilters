@@ -236,8 +236,8 @@ public partial class MainWindowViewModel : ViewModelBase
             if (path != null)
             {
                 var extension = Path.GetExtension(path.Name).ToLower();
-                using var stream = await path.OpenWriteAsync();
-                _imageSource.Encode(stream, SKEncodedImageFormat.Png, 300);
+                await using var stream = await path.OpenWriteAsync();
+                ImageSource.Encode(stream, SKEncodedImageFormat.Png, 300);
             }
         }
         catch (Exception e)
