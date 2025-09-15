@@ -58,6 +58,9 @@
             <Button Command="{Binding ApplyFilter5Command}"
 					IsEnabled="{Binding IsImageLoaded}"
 					Background="{Binding Filter5Brush}">Invert</Button>
+	        
+	        <Button Command="{Binding ApplyFilter6Command}"
+	                IsEnabled="{Binding IsImageLoaded}">Grayscale</Button>
 			
             <Button Background="#b3003b"
 					IsEnabled="{Binding IsImageLoaded}"

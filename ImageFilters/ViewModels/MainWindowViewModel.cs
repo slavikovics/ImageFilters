@@ -135,6 +135,16 @@ public partial class MainWindowViewModel : ViewModelBase
     }
 
     [RelayCommand]
+    private async Task ApplyFilter6()
+    {
+        _currentFilter?.SaveChanges();
+        _selectedLiveFilter = null;
+        DisableAllSelections();
+        if (_currentFilter is null) return;
+        ImageSource = _currentFilter.Grayscale();
+    }
+
+    [RelayCommand]
     private async Task AdjustBrightnessUsingTarget()
     {
         _currentFilter?.SaveChanges();

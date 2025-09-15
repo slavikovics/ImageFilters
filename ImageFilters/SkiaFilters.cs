@@ -44,10 +44,10 @@ public class SkiaFilters
     }
 
     public SKBitmap Grayscale() => ApplyColorMatrix(Original, [
-        0.2126f, 0.2126f, 0.2126f, 0, 0,
-        0.7152f, 0.7152f, 0.7152f, 0, 0,
-        0.0722f, 0.0722f, 0.0722f, 0, 0,
-        0, 0, 0, 1, 0
+        0.299f, 0.587f, 0.114f, 0, 0,
+        0.299f, 0.587f, 0.114f, 0, 0,  
+        0.299f, 0.587f, 0.114f, 0, 0,
+        0,      0,      0,      1, 0
     ]);
 
     public static float SmartClamp(float value, float newMin, float newMax, float originalMin = 0f, float originalMax = 100f)
