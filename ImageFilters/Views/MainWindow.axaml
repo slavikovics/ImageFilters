@@ -70,6 +70,10 @@
 	                Command="{Binding AdjustBrightnessUsingTargetCommand}">Load other image as reference</Button>
 	        
 	        <Button IsEnabled="{Binding IsImageLoaded}"
+					Background="{Binding CannyFilterBrush}"
+	                Command="{Binding ApplyCannyFilterCommand}">Canny</Button>
+	        
+	        <Button IsEnabled="{Binding IsImageLoaded}"
 	                Command="{Binding SaveImageCommand}">Save image</Button>
         </StackPanel>
     </Grid>

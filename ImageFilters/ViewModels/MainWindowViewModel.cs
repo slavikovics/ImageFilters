@@ -2,6 +2,7 @@
 using System.IO;
 using System.Threading.Tasks;
 using Avalonia.Media;
+using CannyFilter;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using SkiaSharp;
@@ -46,6 +47,9 @@ public partial class MainWindowViewModel : ViewModelBase
 
     [ObservableProperty]
     private SolidColorBrush _filter5Brush;
+    
+    [ObservableProperty]
+    private SolidColorBrush _cannyFilterBrush;
 
     [ObservableProperty]
     private bool _isImageLoaded;
@@ -77,6 +81,7 @@ public partial class MainWindowViewModel : ViewModelBase
         Filter3Brush = new SolidColorBrush(_defaultColor);
         Filter4Brush = new SolidColorBrush(_defaultColor);
         Filter5Brush = new SolidColorBrush(_defaultColor);
+        CannyFilterBrush = new SolidColorBrush(_defaultColor);
     }
 
     [RelayCommand]
@@ -164,6 +169,18 @@ public partial class MainWindowViewModel : ViewModelBase
         catch (Exception ex)
         {
         }
+    }
+
+    [RelayCommand]
+    private async Task ApplyCannyFilter()
+    {
+        _currentFilter?.SaveChanges();
+        _selectedLiveFilter = null;
+        DisableAllSelections();
+        
+        CannyDetector cannyDetector = new ();
+        CannyFilterBrush.Color = _selectedColor;
+        ImageSource = await cannyDetector.DetectToBitmap(ImageSource);
     }
     
     private async Task UpdateFilter1()

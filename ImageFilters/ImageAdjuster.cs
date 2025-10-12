@@ -33,13 +33,6 @@ public static class ImageAdjuster
         return adjusted;
     }
 
-    private static SKBitmap ConvertToRgba8888(SKBitmap bitmap)
-    {
-        if (bitmap.ColorType == SKColorType.Rgba8888)
-            return bitmap;
-        return bitmap.Copy(SKColorType.Rgba8888);
-    }
-
     private struct ImageStats
     {
         public (double Mean, double Std) Red;
