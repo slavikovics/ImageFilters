@@ -50,6 +50,9 @@ public partial class MainWindowViewModel : ViewModelBase
     
     [ObservableProperty]
     private SolidColorBrush _cannyFilterBrush;
+    
+    [ObservableProperty]
+    private SolidColorBrush _cannyRegionsBrush;
 
     [ObservableProperty]
     private bool _isImageLoaded;
@@ -82,6 +85,7 @@ public partial class MainWindowViewModel : ViewModelBase
         Filter4Brush = new SolidColorBrush(_defaultColor);
         Filter5Brush = new SolidColorBrush(_defaultColor);
         CannyFilterBrush = new SolidColorBrush(_defaultColor);
+        CannyRegionsBrush = new SolidColorBrush(_defaultColor);
     }
 
     [RelayCommand]
@@ -180,8 +184,28 @@ public partial class MainWindowViewModel : ViewModelBase
         
         CannyDetector cannyDetector = new ();
         CannyFilterBrush.Color = _selectedColor;
-        ImageSource = await cannyDetector.DetectToBitmap(ImageSource);
+        var filledBitmap = await cannyDetector.DetectToBitmap(ImageSource);
+        // ImageSource = ImageUtils.MergeBitmaps(ImageSource, filledBitmap);
+        ImageSource = filledBitmap;
     }
+    
+    [RelayCommand]
+    private async Task ApplyCannyRegionsFilter()
+    {
+        _currentFilter?.SaveChanges();
+        _selectedLiveFilter = null;
+        DisableAllSelections();
+
+        var cannyDetector = new CannyDetector();
+        CannyFilterBrush.Color = _selectedColor;
+        
+        var edgesBitmap = await cannyDetector.DetectToBitmap(ImageSource);
+        var closedEdges = Morphology.Close(edgesBitmap, radius: 10);
+        var filledBitmap = RegionFiller.FillRegions(closedEdges, new SKColor(100, 100, 100));
+        // ImageSource = ImageUtils.MergeBitmaps(ImageSource, filledBitmap);
+        ImageSource = filledBitmap;
+    }
+
     
     private async Task UpdateFilter1()
     {

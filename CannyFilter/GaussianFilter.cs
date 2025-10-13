@@ -5,13 +5,11 @@ public class GaussianFilter
     public static float[] Apply(float[] src, int width, int height, float sigma)
     {
         if (sigma <= 0) return (float[])src.Clone();
-
-
+        
         int radius = (int)Math.Ceiling(3 * sigma);
         int kernelSize = 2 * radius + 1;
         var kernel = new float[kernelSize];
-
-
+        
         float sum = 0f;
         for (int i = -radius; i <= radius; i++)
         {
@@ -21,8 +19,7 @@ public class GaussianFilter
         }
 
         for (int i = 0; i < kernelSize; i++) kernel[i] /= sum;
-
-
+        
         var tmp = new float[width * height];
         var dst = new float[width * height];
         

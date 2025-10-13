@@ -7,9 +7,7 @@ public class SobelOperator
         gx = new float[width * height];
         gy = new float[width * height];
         mag = new float[width * height];
-
-
-// Собель ядра
+        
         int[,] kx = new int[3, 3] { { -1, 0, 1 }, { -2, 0, 2 }, { -1, 0, 1 } };
         int[,] ky = new int[3, 3] { { 1, 2, 1 }, { 0, 0, 0 }, { -1, -2, -1 } };
 
@@ -36,8 +34,5 @@ public class SobelOperator
                 mag[idx] = (float)Math.Sqrt(sx * sx + sy * sy);
             }
         }
-
-
-// border handling: copy zeros (already zero-initialized)
     }
 }

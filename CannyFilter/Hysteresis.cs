@@ -1,41 +1,34 @@
 ﻿namespace CannyFilter;
 
-public class Hysteresis
+public static class Hysteresis
 {
     public static byte[] Apply(float[] mag, int width, int height, float lowRatio, float highRatio)
     {
         int size = width * height;
-        byte[] result = new byte[size]; // 0 - non-edge, 1 - edge
-
-
-// находим максимальный модуль градиента
+        byte[] result = new byte[size];
+        
         float max = 0f;
         for (int i = 0; i < size; i++) if (mag[i] > max) max = mag[i];
-
-
+        
         float high = highRatio * max;
         float low = lowRatio * max;
 
-
         var strong = new Stack<int>();
-
-
-// отмечаем сильные и слабые пиксели
-        const byte STRONG = 2;
-        const byte WEAK = 1;
+        
+        const byte strongValue = 2;
+        const byte weakValue = 1;
         var marks = new byte[size];
-
-
+        
         for (int i = 0; i < size; i++)
         {
             if (mag[i] >= high)
             {
-                marks[i] = STRONG;
+                marks[i] = strongValue;
                 strong.Push(i);
             }
             else if (mag[i] >= low)
             {
-                marks[i] = WEAK;
+                marks[i] = weakValue;
             }
             else
             {
@@ -43,20 +36,16 @@ public class Hysteresis
             }
         }
 
-
-// прослеживаем слабые пиксели, связанные с сильными
         while (strong.Count > 0)
         {
             int idx = strong.Pop();
-            if (result[idx] == 1) continue; // уже помечено
+            if (result[idx] == 1) continue;
             result[idx] = 1;
 
 
             int y = idx / width;
             int x = idx % width;
 
-
-// проверяем 8 соседей
             for (int dy = -1; dy <= 1; dy++)
             {
                 for (int dx = -1; dx <= 1; dx++)
@@ -66,17 +55,15 @@ public class Hysteresis
                     int ny = y + dy;
                     if (nx < 0 || nx >= width || ny < 0 || ny >= height) continue;
                     int nidx = ny * width + nx;
-                    if (marks[nidx] == WEAK && result[nidx] == 0)
+                    if (marks[nidx] == weakValue && result[nidx] == 0)
                     {
-// если слабый и ещё не помечен, считаем его частью границы
                         result[nidx] = 1;
                         strong.Push(nidx);
                     }
                 }
             }
         }
-
-
+        
         return result;
     }
 }

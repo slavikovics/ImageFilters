@@ -4,13 +4,13 @@ namespace CannyFilter;
 
 public class CannyDetector
 {
-    public float Sigma { get; set; } = 1.4f;
-    public float LowThresholdRatio { get; set; } = 0.05f; // например 0.05
-    public float HighThresholdRatio { get; set; } = 0.15f; // например 0.15
+    private float Sigma { get; set; } = 1.5f;
+    private float LowThresholdRatio { get; set; } = 0.05f;
+    private float HighThresholdRatio { get; set; } = 0.1f;
     
     public CannyDetector() { }
-    
-    public byte[] Detect(SKBitmap bmp)
+
+    private byte[] Detect(SKBitmap bmp)
     {
         int w = bmp.Width;
         int h = bmp.Height;
@@ -22,8 +22,7 @@ public class CannyDetector
         var edges = Hysteresis.Apply(suppressed, w, h, LowThresholdRatio, HighThresholdRatio);
         return edges;
     }
-
-
+    
     public async Task<SKBitmap> DetectToBitmap(SKBitmap bmp)
     {
         int w = bmp.Width;

@@ -37,4 +37,35 @@ public class ImageUtils
         }
         return outBmp;
     }
+    
+    public static SKBitmap MergeBitmaps(SKBitmap originalBitmap, SKBitmap overlayBitmap)
+    {
+        if (originalBitmap == null)
+            throw new ArgumentNullException(nameof(originalBitmap));
+        if (overlayBitmap == null)
+            throw new ArgumentNullException(nameof(overlayBitmap));
+
+        int width = Math.Min(originalBitmap.Width, overlayBitmap.Width);
+        int height = Math.Min(originalBitmap.Height, overlayBitmap.Height);
+
+        var result = new SKBitmap(width, height, originalBitmap.ColorType, originalBitmap.AlphaType);
+        using (var canvas = new SKCanvas(result))
+        {
+            canvas.DrawBitmap(originalBitmap, new SKRect(0, 0, width, height));
+
+            for (int y = 0; y < height; y++)
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    var overlayColor = overlayBitmap.GetPixel(x, y);
+                    if (overlayColor.Red > 128 && overlayColor.Green > 128 && overlayColor.Blue > 128)
+                    {
+                        result.SetPixel(x, y, SKColors.Red);
+                    }
+                }
+            }
+        }
+
+        return result;
+    }
 }
