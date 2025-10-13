@@ -184,7 +184,7 @@ public partial class MainWindowViewModel : ViewModelBase
         
         CannyDetector cannyDetector = new ();
         CannyFilterBrush.Color = _selectedColor;
-        var filledBitmap = await cannyDetector.DetectToBitmap(ImageSource);
+        var filledBitmap = await Task.Run(() => cannyDetector.DetectToBitmap(ImageSource));
         // ImageSource = ImageUtils.MergeBitmaps(ImageSource, filledBitmap);
         ImageSource = filledBitmap;
     }
@@ -199,10 +199,10 @@ public partial class MainWindowViewModel : ViewModelBase
         var cannyDetector = new CannyDetector();
         CannyFilterBrush.Color = _selectedColor;
         
-        var edgesBitmap = await cannyDetector.DetectToBitmap(ImageSource);
-        var closedEdges = Morphology.Close(edgesBitmap, radius: 10);
-        var filledBitmap = RegionFiller.FillRegions(closedEdges, new SKColor(100, 100, 100));
-        // ImageSource = ImageUtils.MergeBitmaps(ImageSource, filledBitmap);
+        var edgesBitmap = await Task.Run(() => cannyDetector.DetectToBitmap(ImageSource));
+        var closedEdges = await Task.Run(() => Morphology.Close(edgesBitmap, radius: 10));
+        var filledBitmap = await Task.Run(() => RegionFiller.FillRegions(closedEdges, new SKColor(100, 100, 100)));
+        ImageSource = ImageUtils.MergeBitmaps(ImageSource, filledBitmap);
         ImageSource = filledBitmap;
     }
 

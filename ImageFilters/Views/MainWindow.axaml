@@ -70,11 +70,9 @@
 	                Command="{Binding AdjustBrightnessUsingTargetCommand}">Load other image as reference</Button>
 	        
 	        <Button IsEnabled="{Binding IsImageLoaded}"
-					Background="{Binding CannyFilterBrush}"
 	                Command="{Binding ApplyCannyFilterCommand}">Canny</Button>
 	        
 	        <Button IsEnabled="{Binding IsImageLoaded}"
-	                Background="{Binding CannyRegionsBrush}"
 	                Command="{Binding ApplyCannyRegionsFilterCommand}">Canny Regions</Button>
 	        
 	        <Button IsEnabled="{Binding IsImageLoaded}"
