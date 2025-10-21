@@ -6,6 +6,7 @@ using CannyFilter;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using SkiaSharp;
+using SpectralImages;
 
 namespace ImageFilters.ViewModels;
 
@@ -49,6 +50,9 @@ public partial class MainWindowViewModel : ViewModelBase
     private SolidColorBrush _filter5Brush;
     
     [ObservableProperty]
+    private SolidColorBrush _stereoBrush;
+    
+    [ObservableProperty]
     private SolidColorBrush _cannyFilterBrush;
     
     [ObservableProperty]
@@ -86,6 +90,7 @@ public partial class MainWindowViewModel : ViewModelBase
         Filter5Brush = new SolidColorBrush(_defaultColor);
         CannyFilterBrush = new SolidColorBrush(_defaultColor);
         CannyRegionsBrush = new SolidColorBrush(_defaultColor);
+        StereoBrush = new SolidColorBrush(_defaultColor);
     }
 
     [RelayCommand]
@@ -119,6 +124,17 @@ public partial class MainWindowViewModel : ViewModelBase
         DisableAllSelections();
         Filter3Brush.Color = _selectedColor;
         await UpdateFilter3();
+    }
+    
+    [RelayCommand]
+    private async Task ApplyStereo()
+    {
+        _currentFilter?.SaveChanges();
+        _selectedLiveFilter = null;
+        _selectedLiveFilter += UpdateStereo;
+        DisableAllSelections();
+        StereoBrush.Color = _selectedColor;
+        await UpdateStereo();
     }
 
     [RelayCommand]
@@ -235,6 +251,13 @@ public partial class MainWindowViewModel : ViewModelBase
     {
         if (_currentFilter is null) return;
         ImageSource = _currentFilter.Invert((float) SliderValue);
+    }
+
+    private async Task UpdateStereo()
+    {
+        if (_currentFilter is null) return;
+        var shift = Convert.ToInt32(Math.Round(SkiaFilters.SmartClamp((float) SliderValue, 0f, 30f)));
+        ImageSource = Stereo.CreateAnaglyphImage(_backup, shift);
     }
     
     private async Task ApplyLiveFilterChange()

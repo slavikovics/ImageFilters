@@ -32,5 +32,6 @@
 
     <ItemGroup>
       <ProjectReference Include="..\CannyFilter\CannyFilter.csproj" />
+      <ProjectReference Include="..\StereoImages\StereoImages.csproj" />
     </ItemGroup>
 </Project>

@@ -13,70 +13,99 @@
     <Design.DataContext>
         <!-- This only sets the DataContext for the previewer in an IDE,
              to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
-        <vm:MainWindowViewModel/>
+        <vm:MainWindowViewModel />
     </Design.DataContext>
 
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
+            <RowDefinition />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-		
-        <local:SkiaBitmapView Grid.Row="0" 
-							  CurrentBitmap="{Binding ImageSource}" 
-							  Stretch="Uniform" 
-							  ClipToBounds="True"
+
+        <local:SkiaBitmapView Grid.Row="0"
+                              CurrentBitmap="{Binding ImageSource}"
+                              Stretch="Uniform"
+                              ClipToBounds="True"
                               HorizontalAlignment="Stretch"
-                              VerticalAlignment="Stretch"/>
-		
+                              VerticalAlignment="Stretch" />
+
         <Slider Minimum="0" Maximum="100" Value="{Binding SliderValue}" Grid.Row="1"></Slider>
-		
-        <StackPanel Margin="0 5 0 10" 
-					HorizontalAlignment="Center" 
-					Spacing="10"
-					Grid.Row="2"
-					Orientation="Horizontal">
-            <Button Command="{Binding LoadImageCommand}">Upload image</Button>
-			
-            <Button Command="{Binding ApplyFilter1Command}" 
-					IsEnabled="{Binding IsImageLoaded}"
-					Background="{Binding Filter1Brush}">Sephia</Button>
-			
-            <Button Command="{Binding ApplyFilter2Command}"
-					IsEnabled="{Binding IsImageLoaded}"
-					Background="{Binding Filter2Brush}">Blur</Button>
-			
-            <Button Command="{Binding ApplyFilter3Command}"
-					IsEnabled="{Binding IsImageLoaded}"
-					Background="{Binding Filter3Brush}">Brightness</Button>
-			
-            <Button Command="{Binding ApplyFilter4Command}"
-					IsEnabled="{Binding IsImageLoaded}"
-					Background="{Binding Filter4Brush}">Contrast</Button>
-			
-            <Button Command="{Binding ApplyFilter5Command}"
-					IsEnabled="{Binding IsImageLoaded}"
-					Background="{Binding Filter5Brush}">Invert</Button>
-	        
-	        <Button Command="{Binding ApplyFilter6Command}"
-	                IsEnabled="{Binding IsImageLoaded}">Grayscale</Button>
-			
-            <Button Background="#b3003b"
-					IsEnabled="{Binding IsImageLoaded}"
-					Command="{Binding ResetFilterCommand}">Reset</Button>
-	        
-	        <Button IsEnabled="{Binding IsImageLoaded}"
-	                Command="{Binding AdjustBrightnessUsingTargetCommand}">Load other image as reference</Button>
-	        
-	        <Button IsEnabled="{Binding IsImageLoaded}"
-	                Command="{Binding ApplyCannyFilterCommand}">Canny</Button>
-	        
-	        <Button IsEnabled="{Binding IsImageLoaded}"
-	                Command="{Binding ApplyCannyRegionsFilterCommand}">Canny Regions</Button>
-	        
-	        <Button IsEnabled="{Binding IsImageLoaded}"
-	                Command="{Binding SaveImageCommand}">Save image</Button>
-        </StackPanel>
+
+        <ScrollViewer Grid.Row="2" HorizontalScrollBarVisibility="Visible">
+            <StackPanel Margin="0 5 0 10"
+                        HorizontalAlignment="Center"
+                        Spacing="10"
+                        Orientation="Horizontal">
+                <Button Command="{Binding LoadImageCommand}">Upload image</Button>
+
+                <Button Command="{Binding ApplyFilter1Command}"
+                        IsEnabled="{Binding IsImageLoaded}"
+                        Background="{Binding Filter1Brush}">
+                    Sephia
+                </Button>
+
+                <Button Command="{Binding ApplyFilter2Command}"
+                        IsEnabled="{Binding IsImageLoaded}"
+                        Background="{Binding Filter2Brush}">
+                    Blur
+                </Button>
+
+                <Button Command="{Binding ApplyFilter3Command}"
+                        IsEnabled="{Binding IsImageLoaded}"
+                        Background="{Binding Filter3Brush}">
+                    Brightness
+                </Button>
+
+                <Button Command="{Binding ApplyFilter4Command}"
+                        IsEnabled="{Binding IsImageLoaded}"
+                        Background="{Binding Filter4Brush}">
+                    Contrast
+                </Button>
+
+                <Button Command="{Binding ApplyFilter5Command}"
+                        IsEnabled="{Binding IsImageLoaded}"
+                        Background="{Binding Filter5Brush}">
+                    Invert
+                </Button>
+
+                <Button Command="{Binding ApplyFilter6Command}"
+                        IsEnabled="{Binding IsImageLoaded}">
+                    Grayscale
+                </Button>
+
+                <Button Background="#b3003b"
+                        IsEnabled="{Binding IsImageLoaded}"
+                        Command="{Binding ResetFilterCommand}">
+                    Reset
+                </Button>
+
+                <Button IsEnabled="{Binding IsImageLoaded}"
+                        Command="{Binding AdjustBrightnessUsingTargetCommand}">
+                    Load other image as reference
+                </Button>
+
+                <Button IsEnabled="{Binding IsImageLoaded}"
+                        Command="{Binding ApplyCannyFilterCommand}">
+                    Canny
+                </Button>
+
+                <Button IsEnabled="{Binding IsImageLoaded}"
+                        Command="{Binding ApplyCannyRegionsFilterCommand}">
+                    Canny Regions
+                </Button>
+
+                <Button IsEnabled="{Binding IsImageLoaded}"
+                        Command="{Binding SaveImageCommand}">
+                    Save image
+                </Button>
+                
+                <Button IsEnabled="{Binding IsImageLoaded}"
+                        Command="{Binding ApplyStereoCommand}"
+                        Background="{Binding StereoBrush}">
+                    Stereo
+                </Button>
+            </StackPanel>
+        </ScrollViewer>
     </Grid>
 </Window>
