@@ -1,5 +1,6 @@
 from fastapi import FastAPI, File, UploadFile, HTTPException
 from fastapi.responses import FileResponse
+from image_replacer import ImageReplacer
 import cv2
 import numpy as np
 from ultralytics import YOLO
@@ -12,6 +13,7 @@ app = FastAPI(title="Aerial Object Detection API")
 
 model = None
 MODEL_PATH = "../runs/obb/train/weights/best.pt"
+replacer = ImageReplacer("../runs/obb/train/weights/best.pt")
 OUTPUT_DIR = "detection_results"
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
@@ -36,12 +38,10 @@ async def load_model():
         model = YOLO("yolo11n-obb.pt")
 
 def save_upload_file(upload_file: UploadFile, save_path: str):
-    """Save uploaded file to disk"""
     with open(save_path, "wb") as buffer:
         shutil.copyfileobj(upload_file.file, buffer)
 
 def process_image(image_path: str, output_suffix: str = "detected"):
-    """Run detection on image and save result"""
     if model is None:
         raise HTTPException(status_code=500, detail="Model not loaded")
     
@@ -52,69 +52,6 @@ def process_image(image_path: str, output_suffix: str = "detected"):
     results = model(image_path)
     
     results[0].save(output_path)
-    
-    return output_path
-
-def replace_vehicles_in_image(original_image_path: str, replacement_image_path: str, vehicle_class: str = "small-vehicle"):
-    original_img = cv2.imread(original_image_path)
-    replacement_img = cv2.imread(replacement_image_path)
-    
-    if original_img is None:
-        raise HTTPException(status_code=400, detail="Could not load original image")
-    if replacement_img is None:
-        raise HTTPException(status_code=400, detail="Could not load replacement image")
-    
-    results = model(original_image_path)
-    
-    detections = results[0]
-    
-    if hasattr(detections, 'obb') and detections.obb is not None:
-        boxes = detections.obb.xyxyxyxy.cpu().numpy() if detections.obb.xyxyxyxy is not None else None
-        classes = detections.obb.cls.cpu().numpy() if detections.obb.cls is not None else None
-        confidences = detections.obb.conf.cpu().numpy() if detections.obb.conf is not None else None
-    else:
-        boxes = detections.boxes.xyxy.cpu().numpy() if detections.boxes.xyxy is not None else None
-        classes = detections.boxes.cls.cpu().numpy() if detections.boxes.cls is not None else None
-        confidences = detections.boxes.conf.cpu().numpy() if detections.boxes.conf is not None else None
-    
-    result_img = original_img.copy()
-    
-    if boxes is not None and len(boxes) > 0:
-        for i, box in enumerate(boxes):
-            class_id = int(classes[i]) if classes is not None else -1
-            confidence = confidences[i] if confidences is not None else 0
-            
-            class_name = CLASS_NAMES[class_id] if 0 <= class_id < len(CLASS_NAMES) else f"class_{class_id}"
-            
-            if class_name == vehicle_class and confidence > 0.5:  # Confidence threshold
-                print(f"Replacing {vehicle_class} with confidence {confidence:.2f}")
-                
-                if len(box) == 8:
-                    points = box.reshape(4, 2).astype(int)
-                    x_coords = points[:, 0]
-                    y_coords = points[:, 1]
-                    x1, x2 = np.min(x_coords), np.max(x_coords)
-                    y1, y2 = np.min(y_coords), np.max(y_coords)
-                else:
-                    x1, y1, x2, y2 = box.astype(int)
-                
-                width = x2 - x1
-                height = y2 - y1
-                
-                if width < 10 or height < 10:
-                    continue
-                
-                resized_replacement = cv2.resize(replacement_img, (width, height))
-                
-                try:
-                    result_img[y1:y2, x1:x2] = resized_replacement
-                except ValueError as e:
-                    print(f"Warning: Could not replace region: {e}")
-                    continue
-    
-    output_filename = f"replaced_{uuid.uuid4().hex[:8]}.jpg"
-    output_path = os.path.join(OUTPUT_DIR, output_filename)
-    cv2.imwrite(output_path, result_img)
     
     return output_path
 
@@ -140,7 +77,7 @@ async def detect_objects(image: UploadFile = File(...)):
 async def detect_and_replace_vehicles(
     original_image: UploadFile = File(...),
     replacement_image: UploadFile = File(...),
-    vehicle_class: str = "small-vehicle"
+    vehicle_class: str = "plane"
 ):
     try:
         temp_original = os.path.join(OUTPUT_DIR, f"temp_orig_{uuid.uuid4().hex[:8]}_{original_image.filename}")
@@ -149,7 +86,7 @@ async def detect_and_replace_vehicles(
         save_upload_file(original_image, temp_original)
         save_upload_file(replacement_image, temp_replacement)
         
-        result_path = replace_vehicles_in_image(temp_original, temp_replacement, vehicle_class)
+        result_path = replacer.replace_objects_in_image(temp_original, temp_replacement, vehicle_class)
         
         os.remove(temp_original)
         os.remove(temp_replacement)
