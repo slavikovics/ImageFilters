@@ -110,6 +110,11 @@
                         Command="{Binding DetectObjectsCommand}">
                     Detect objects
                 </Button>
+                
+                <Button IsEnabled="{Binding IsImageLoaded}"
+                        Command="{Binding ReplaceObjectsCommand}">
+                    Replace objects
+                </Button>
             </StackPanel>
         </ScrollViewer>
     </Grid>

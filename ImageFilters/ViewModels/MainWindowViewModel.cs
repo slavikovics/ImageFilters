@@ -339,6 +339,73 @@ public partial class MainWindowViewModel : ViewModelBase
     }
 
     [RelayCommand]
+    private async Task ReplaceObjects()
+    {
+        if (string.IsNullOrEmpty(_source.AbsolutePath) || !IsImageLoaded)
+        {
+            return;
+        }
+
+        try
+        {
+            var replacementSource = await _filePickerService.PickImageAsync();
+            if (replacementSource == null)
+            {
+                return;
+            }
+
+            using var httpClient = new HttpClient();
+            httpClient.Timeout = TimeSpan.FromMinutes(2);
+
+            using var formData = new MultipartFormDataContent();
+
+            byte[] originalImageBytes;
+            using (var fileStream = File.OpenRead(_source.AbsolutePath))
+            {
+                using var memoryStream = new MemoryStream();
+                await fileStream.CopyToAsync(memoryStream);
+                originalImageBytes = memoryStream.ToArray();
+            }
+
+            byte[] replacementImageBytes;
+            await using (var replacementStream = await replacementSource.OpenReadAsync())
+            {
+                using var memoryStream = new MemoryStream();
+                await replacementStream.CopyToAsync(memoryStream);
+                replacementImageBytes = memoryStream.ToArray();
+            }
+
+            var originalImageContent = new ByteArrayContent(originalImageBytes);
+            originalImageContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("image/jpeg");
+            formData.Add(originalImageContent, "original_image", Path.GetFileName(_source.AbsolutePath));
+
+            var replacementImageContent = new ByteArrayContent(replacementImageBytes);
+            replacementImageContent.Headers.ContentType =
+                new System.Net.Http.Headers.MediaTypeHeaderValue("image/jpeg");
+            formData.Add(replacementImageContent, "replacement_image", Path.GetFileName(replacementSource.Path.AbsolutePath));
+
+
+            var response = await httpClient.PostAsync("http://127.0.0.1:8000/detect_and_replace/", formData);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var processedImageBytes = await response.Content.ReadAsByteArrayAsync();
+
+                using var stream = new MemoryStream(processedImageBytes);
+                ImageSource = SKBitmap.Decode(stream);
+            }
+            else
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+            }
+        }
+        catch (Exception ex)
+        {
+            //
+        }
+    }
+
+    [RelayCommand]
     private void ResetFilter()
     {
         ImageSource = _backup.Copy();
