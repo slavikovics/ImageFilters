@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Avalonia.Media;
 using CannyFilter;
@@ -14,18 +15,16 @@ public partial class MainWindowViewModel : ViewModelBase
 {
     private readonly IFilePickerService _filePickerService;
 
-    [ObservableProperty] 
-    private SKBitmap _imageSource;
+    [ObservableProperty] private SKBitmap _imageSource;
 
     private SKBitmap _backup;
-    
-    [ObservableProperty] 
-    private double _sliderValue = 0;
-    
+
+    [ObservableProperty] private double _sliderValue = 0;
+
     private double _lastSliderValue = 0;
 
     private delegate Task SelectedFilter();
-    
+
     private SelectedFilter? _selectedLiveFilter;
 
     private SkiaFilters? _currentFilter;
@@ -34,32 +33,25 @@ public partial class MainWindowViewModel : ViewModelBase
 
     private Color _defaultColor;
 
-    [ObservableProperty]
-    private SolidColorBrush _filter1Brush;
+    private Uri _source;
 
-    [ObservableProperty]
-    private SolidColorBrush _filter2Brush;
+    [ObservableProperty] private SolidColorBrush _filter1Brush;
 
-    [ObservableProperty]
-    private SolidColorBrush _filter3Brush;
+    [ObservableProperty] private SolidColorBrush _filter2Brush;
 
-    [ObservableProperty]
-    private SolidColorBrush _filter4Brush;
+    [ObservableProperty] private SolidColorBrush _filter3Brush;
 
-    [ObservableProperty]
-    private SolidColorBrush _filter5Brush;
-    
-    [ObservableProperty]
-    private SolidColorBrush _stereoBrush;
-    
-    [ObservableProperty]
-    private SolidColorBrush _cannyFilterBrush;
-    
-    [ObservableProperty]
-    private SolidColorBrush _cannyRegionsBrush;
+    [ObservableProperty] private SolidColorBrush _filter4Brush;
 
-    [ObservableProperty]
-    private bool _isImageLoaded;
+    [ObservableProperty] private SolidColorBrush _filter5Brush;
+
+    [ObservableProperty] private SolidColorBrush _stereoBrush;
+
+    [ObservableProperty] private SolidColorBrush _cannyFilterBrush;
+
+    [ObservableProperty] private SolidColorBrush _cannyRegionsBrush;
+
+    [ObservableProperty] private bool _isImageLoaded;
 
     partial void OnSliderValueChanged(double value)
     {
@@ -125,7 +117,7 @@ public partial class MainWindowViewModel : ViewModelBase
         Filter3Brush.Color = _selectedColor;
         await UpdateFilter3();
     }
-    
+
     [RelayCommand]
     private async Task ApplyStereo()
     {
@@ -175,7 +167,7 @@ public partial class MainWindowViewModel : ViewModelBase
         _currentFilter?.SaveChanges();
         _selectedLiveFilter = null;
         DisableAllSelections();
-        
+
         try
         {
             var source = await _filePickerService.PickImageAsync();
@@ -197,14 +189,14 @@ public partial class MainWindowViewModel : ViewModelBase
         _currentFilter?.SaveChanges();
         _selectedLiveFilter = null;
         DisableAllSelections();
-        
-        CannyDetector cannyDetector = new ();
+
+        CannyDetector cannyDetector = new();
         CannyFilterBrush.Color = _selectedColor;
         var filledBitmap = await Task.Run(() => cannyDetector.DetectToBitmap(ImageSource));
         // ImageSource = ImageUtils.MergeBitmaps(ImageSource, filledBitmap);
         ImageSource = filledBitmap;
     }
-    
+
     [RelayCommand]
     private async Task ApplyCannyRegionsFilter()
     {
@@ -214,7 +206,7 @@ public partial class MainWindowViewModel : ViewModelBase
 
         var cannyDetector = new CannyDetector();
         CannyFilterBrush.Color = _selectedColor;
-        
+
         var edgesBitmap = await Task.Run(() => cannyDetector.DetectToBitmap(ImageSource));
         var closedEdges = await Task.Run(() => Morphology.Close(edgesBitmap, radius: 10));
         var filledBitmap = await Task.Run(() => RegionFiller.FillRegions(closedEdges, new SKColor(100, 100, 100)));
@@ -222,48 +214,48 @@ public partial class MainWindowViewModel : ViewModelBase
         ImageSource = filledBitmap;
     }
 
-    
+
     private async Task UpdateFilter1()
     {
         if (_currentFilter is null) return;
-        ImageSource = _currentFilter.Sepia((float) SliderValue);
+        ImageSource = _currentFilter.Sepia((float)SliderValue);
     }
-    
+
     private async Task UpdateFilter2()
     {
         if (_currentFilter is null) return;
         ImageSource = _currentFilter.Blur((float)SliderValue * 10);
     }
-    
+
     private async Task UpdateFilter3()
     {
         if (_currentFilter is null) return;
         ImageSource = _currentFilter.Brightness((float)SliderValue * 2);
     }
-    
+
     private async Task UpdateFilter4()
     {
         if (_currentFilter is null) return;
-        ImageSource = _currentFilter.Contrast((float) SliderValue);
+        ImageSource = _currentFilter.Contrast((float)SliderValue);
     }
-    
+
     private async Task UpdateFilter5()
     {
         if (_currentFilter is null) return;
-        ImageSource = _currentFilter.Invert((float) SliderValue);
+        ImageSource = _currentFilter.Invert((float)SliderValue);
     }
 
     private async Task UpdateStereo()
     {
         if (_currentFilter is null) return;
-        var shift = Convert.ToInt32(Math.Round(SkiaFilters.SmartClamp((float) SliderValue, 0f, 30f)));
+        var shift = Convert.ToInt32(Math.Round(SkiaFilters.SmartClamp((float)SliderValue, 0f, 30f)));
         ImageSource = Stereo.CreateAnaglyphImage(_backup, shift);
     }
-    
+
     private async Task ApplyLiveFilterChange()
     {
         if (Math.Abs(SliderValue - _lastSliderValue) < 1) return;
-        
+
         _lastSliderValue = SliderValue;
         if (_selectedLiveFilter is null) return;
 
@@ -278,6 +270,7 @@ public partial class MainWindowViewModel : ViewModelBase
             var source = await _filePickerService.PickImageAsync();
             if (source != null)
             {
+                _source = source.Path;
                 await using Stream stream = await source.OpenReadAsync();
                 ImageSource = SKBitmap.Decode(stream);
                 _backup = ImageSource.Copy();
@@ -287,6 +280,61 @@ public partial class MainWindowViewModel : ViewModelBase
         }
         catch (Exception ex)
         {
+        }
+    }
+
+    [RelayCommand]
+    private async Task DetectObjects()
+    {
+        if (string.IsNullOrEmpty(_source.AbsolutePath) || !IsImageLoaded)
+        {
+            return;
+        }
+
+        try
+        {
+            using var httpClient = new HttpClient();
+            httpClient.Timeout = TimeSpan.FromMinutes(2);
+
+            using var formData = new MultipartFormDataContent();
+
+            byte[] imageBytes;
+            using (var fileStream = File.OpenRead(_source.AbsolutePath))
+            {
+                using var memoryStream = new MemoryStream();
+                await fileStream.CopyToAsync(memoryStream);
+                imageBytes = memoryStream.ToArray();
+            }
+
+            var imageContent = new ByteArrayContent(imageBytes);
+            imageContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("image/jpeg");
+            formData.Add(imageContent, "image", Path.GetFileName(_source.AbsolutePath));
+
+            var response = await httpClient.PostAsync("http://127.0.0.1:8000/detect/", formData);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var jsonResponse = await response.Content.ReadAsStringAsync();
+                var result = System.Text.Json.JsonSerializer.Deserialize<DetectionResult>(jsonResponse);
+
+                if (result?.Status == "success" && !string.IsNullOrEmpty(result.DetectedImagePath))
+                {
+                    var processedImageResponse =
+                        await httpClient.GetAsync(
+                            $"http://127.0.0.1:8000/results/{Path.GetFileName(result.DetectedImagePath)}");
+
+                    if (processedImageResponse.IsSuccessStatusCode)
+                    {
+                        var processedImageBytes = await processedImageResponse.Content.ReadAsByteArrayAsync();
+                        using var stream = new MemoryStream(processedImageBytes);
+                        ImageSource = SKBitmap.Decode(stream);
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            //
         }
     }
 

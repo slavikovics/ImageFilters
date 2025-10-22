@@ -105,6 +105,11 @@
                         Background="{Binding StereoBrush}">
                     Stereo
                 </Button>
+                
+                <Button IsEnabled="{Binding IsImageLoaded}"
+                        Command="{Binding DetectObjectsCommand}">
+                    Detect objects
+                </Button>
             </StackPanel>
         </ScrollViewer>
     </Grid>
